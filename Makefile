@@ -10,7 +10,7 @@ all: $(BUILD_DIR)/boot.bin
 $(BUILD_DIR): 
 	mkdir -p $(BUILD_DIR)
 
-$(BUILD_DIR)/boot.bin: $(BOOT_DIR)/main.asm | $(BUILD_DIR)
+$(BUILD_DIR)/boot.bin: $(BOOT_DIR)/boot.asm | $(BUILD_DIR)
 	nasm -f bin $< -o $(BUILD_DIR)/boot.bin
 
 run: $(BUILD_DIR)/boot.bin

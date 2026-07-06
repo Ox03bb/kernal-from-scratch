@@ -1,0 +1,1 @@
+; global descriptor table
