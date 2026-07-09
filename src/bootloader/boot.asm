@@ -1,25 +1,26 @@
-org 0x7C00
+ORG 0x7C00
 bits 16
 
-start:
-    mov si, message
+jmp _start
 
-.print:
-    lodsb               ; Load byte from [SI] into AL, SI++
-    test al, al         ; Is it the null terminator?
-    jz .hang
+msg db "this is my bootLoader",0
 
-    mov ah, 0x0E        ; BIOS teletype output
-    mov bh, 0x00        ; Display page
-    mov bl, 0x07        ; Text attribute (light gray on black)
-    int 0x10
+_start:
 
-    jmp .print
+print:
+    MOV ah, 0x0E
+    MOV si, msg
+    loop:
+        MOV al, [si]
+        CMP al, 0
+        JE loopend
 
-.hang:
-    jmp .hang
+        INT 0x10 
+        INC si
+        JMP loop
 
-message db "Hello, World!", 0
-
-times 510 - ($ - $$) db 0
-dw 0xAA55
+    loopend:
+     
+jmp $
+times 510-($-$$) db 0
+db 0x55, 0xAA
