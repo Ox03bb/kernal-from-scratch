@@ -13,33 +13,45 @@ msg db 13, 10,"Welcom to my bootLoader", 13, 10
 s_msg db 13,10,10,"starting...",0    
 
 
+print:
+    .next:
+        lodsb               ; AL = [SI], SI++
+        test al, al         ; Is AL == 0?
+        jz .done
+
+        mov ah, 0x0E
+        int 0x10
+        jmp .next
+
+    .done:
+        ret
+
+get_key:
+    MOV ah, 0x00
+    INT 0x16
+    ret
+
+clear_screen:
+    mov ax, 0x0003
+    int 0x10
+    ret
+
+
+
 _start:
 
+call clear_screen
 
-mov ax, 0x0003
-int 0x10
-MOV bx, msg 
-MOV dx, 0  ;kernal start flag 
-print:
-    MOV ah, 0x0E
-    MOV si, bx
-    loop:
-        MOV al, [si]
-        ; CMP al, '\n'  ; \ ascii code  
-        ; JE newline 
-        CMP al, 0
-        JE .loop
-        INT 0x10 
-        INC si
-        JMP loop
-    .loop:
-CMP dx,1
-JE end
-MOV ah, 0x00
-INT 0x16
-MOV bx, s_msg  ; Print starting msg
-MOV dx,1 ; Enable kernal start flag 
-JMP print
+
+MOV si, msg 
+call print
+
+call get_key
+
+MOV si, s_msg  ; Print starting msg
+call print
+
+jmp end
 
 PM_start:
     CLI
@@ -87,7 +99,6 @@ PM_main:
     in al, 0x92
     or al, 2
     out 0x92, al
-
 
 times 510-($-$$) db 0 ;padding  
 db 0x55, 0xAA
