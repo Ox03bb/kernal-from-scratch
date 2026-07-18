@@ -47,7 +47,15 @@ _start:
     MOV bx, s_msg  ; Print starting msg
     MOV dx,1 ; Enable kernal start flag 
     JMP print
+    
 
+
+    PM_start:
+        CLI
+        LGDT[gdt_descriptor]
+        MOV eax, cr0
+        OR eax, 1
+        MOV cr0, eax 
 
     gdt_start:
         gdt_null:
@@ -78,7 +86,7 @@ _start:
 
 
     end:
-        jmp $
+        JMP $
 
 
     times 510-($-$$) db 0 ;padding  
