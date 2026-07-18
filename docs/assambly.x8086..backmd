@@ -1,0 +1,486 @@
+# Intel 8086 Instruction Set Reference Manual
+*A structured, heavily indexed markdown conversion optimized for systems programmers and cybersecurity researchers.*
+
+---
+
+### 1. Data Transfer Instructions
+* **General Purpose:** [`MOV`](#mov) | [`PUSH`](#push) | [`POP`](#pop) | [`XCHG`](#xchg) | [`XLAT`](#xlat)
+* **Address Loading:** [`LEA`](#lea) | [`LDS`](#lds) | [`LES`](#les)
+* **Flag Transfer:** [`LAHF`](#lahf) | [`SAHF`](#sahf) | [`PUSHF`](#pushf) | [`POPF`](#popf)
+* **I/O Port:** [`IN`](#in) | [`OUT`](#out)
+
+### 2. Arithmetic Instructions
+* **Addition:** [`ADD`](#add) | [`ADC`](#adc) | [`INC`](#inc) | [`AAA`](#aaa) | [`DAA`](#daa)
+* **Subtraction:** [`SUB`](#sub) | [`SBB`](#sbb) | [`DEC`](#dec) | [`NEG`](#neg) | [`CMP`](#cmp) | [`AAS`](#aas) | [`DAS`](#das)
+* **Multiplication:** [`MUL`](#mul) | [`IMUL`](#imul) | [`AAM`](#aam)
+* **Division:** [`DIV`](#div) | [`IDIV`](#idiv) | [`AAD`](#aad) | [`CBW`](#cbw) | [`CWD`](#cwd)
+
+### 3. Bit Manipulation & Logical
+* **Logical:** [`AND`](#and) | [`OR`](#or) | [`XOR`](#xor) | [`NOT`](#not) | [`TEST`](#test)
+* **Shifts:** [`SHL / SAL`](#shl--sal) | [`SHR`](#shr) | [`SAR`](#sar)
+* **Rotates:** [`ROL`](#rol) | [`ROR`](#ror) | [`RCL`](#rcl) | [`RCR`](#rcr)
+
+### 4. String Operations
+* **Control:** [`REP / REPE / REPZ / REPNE / REPNZ`](#rep--repe--repz--repne--repnz)
+* **Primitives:** [`MOVSB / MOVSW`](#movsb--movsw) | [`CMPSB / CMPSW`](#cmpsb--cmpsw) | [`SCASB / SCASW`](#scasb--scasw) | [`LODSB / LODSW`](#lodsb--lodsw) | [`STOSB / STOSW`](#stosb--stosw)
+
+### 5. Control Flow & Branching
+* **Unconditional:** [`JMP`](#jmp) | [`CALL`](#call) | [`RET / RETF`](#ret--retf)
+* **Conditional Jumps:** 
+  * *Unsigned:* [`JA / JNBE`](#ja--jnbe) | [`JAE / JNB / NC`](#jae--jnb--jnc) | [`JB / JNAE / JC`](#jb--jnae--jc) | [`JBE / JNA`](#jbe--jna)
+  * *Signed:* [`JG / JNLE`](#jg--jnle) | [`JGE / JNL`](#jge--jnl) | [`JL / JNGE`](#jl--jnge) | [`JLE / JNG`](#jle--jng)
+  * *Flags/Special:* [`JE / JZ`](#je--jz) | [`JNE / JNZ`](#jne--jnz) | [`JO`](#jo) | [`JNO`](#jno) | [`JS`](#js) | [`JNS`](#jns) | [`JP / JPE`](#jp--jpe) | [`JNP / JPO`](#jnp--jpo) | [`JCXZ`](#jcxz)
+* **Looping:** [`LOOP`](#loop) | [`LOOPE / LOOPZ`](#loope--loopz) | [`LOOPNE / LOOPNZ`](#loopne--loopnz)
+
+### 6. Processor Control & Flags
+* **Flag Operators:** [`CLC`](#clc) | [`STC`](#stc) | [`CMC`](#cmc) | [`CLD`](#cld) | [`STD`](#std) | [`CLI`](#cli) | [`STI`](#sti)
+* **Miscellaneous:** [`HLT`](#hlt) | [`NOP`](#nop) | [`WAIT`](#wait) | [`ESC`](#esc) | [`LOCK`](#lock) | [`INT`](#int) | [`INTO`](#into) | [`IRET`](#iret)
+
+---
+
+## Alphabetical Instruction Set Quick Links
+
+| | | | | | | |
+|---|---|---|---|---|---|---|
+| [AAA](#aaa) | [AAD](#aad) | [AAM](#aam) | [AAS](#aas) | [ADC](#adc) | [ADD](#add) | [AND](#and) |
+| [CALL](#call) | [CBW](#cbw) | [CLC](#clc) | [CLD](#cld) | [CLI](#cli) | [CMC](#cmc) | [CMP](#cmp) |
+| [CMPSB](#cmpsb--cmpsw) | [CMPSW](#cmpsb--cmpsw) | [CWD](#cwd) | [DAA](#daa) | [DAS](#das) | [DEC](#dec) | [DIV](#div) |
+| [HLT](#hlt) | [IDIV](#idiv) | [IMUL](#imul) | [IN](#in) | [INC](#inc) | [INT](#int) | [INTO](#into) |
+| [IRET](#iret) | [Jcc Jumps](#conditional-jumps) | [JCXZ](#jcxz) | [JMP](#jmp) | [LAHF](#lahf) | [LDS](#lds) | [LEA](#lea) |
+| [LES](#les) | [LODSB](#lodsb--lodsw) | [LODSW](#lodsb--lodsw) | [LOOP](#loop) | [LOOPE](#loope--loopz) | [MOV](#mov) | [MOVSB](#movsb--movsw) |
+| [MOVSW](#movsb--movsw) | [MUL](#mul) | [NEG](#neg) | [NOP](#nop) | [NOT](#not) | [OR](#or) | [OUT](#out) |
+| [POP](#pop) | [POPA](#popa) | [POPF](#popf) | [PUSH](#push) | [PUSHA](#pusha) | [PUSHF](#pushf) | [RCL](#rcl) |
+| [RCR](#rcr) | [REP](#rep--repe--repz--repne--repnz) | [RET](#ret--retf) | [ROL](#rol) | [ROR](#ror) | [SAHF](#sahf) | [SAR](#sar) |
+| [SBB](#sbb) | [SCASB](#scasb--scasw) | [SCASW](#scasb--scasw) | [SHL/SAL](#shl--sal) | [SHR](#shr) | [STC](#stc) | [STD](#std) |
+| [STI](#sti) | [STOSB](#stosb--stosw) | [STOSW](#stosb--stosw) | [SUB](#sub) | [TEST](#test) | [XCHG](#xchg) | [XLAT](#xlat) | [XOR](#xor) |
+
+---
+
+## Operand Type Key
+* **REG**: General purpose register (`AX, BX, CX, DX, AH, AL, BL, BH, CH, CL, DH, DL, DI, SI, BP, SP`).
+* **SREG**: Segment register (`DS, ES, SS`, and `CS` as *source only*).
+* **memory**: Memory reference (e.g., `[BX]`, `[BX+SI+7]`, variable names).
+* **immediate**: Constant value (e.g., `5`, `-24`, `3Fh`, `10001101b`).
+
+---
+
+## Detailed Instruction Lexicon
+
+### AAA
+* **Operands:** No operands
+* **Description:** ASCII Adjust after Addition. Corrects result in `AH` and `AL` after addition when working with BCD values.
+* **Algorithm:**
+  ```text
+  if low nibble of AL > 9 or AF = 1 then:
+      AL = AL + 6
+      AH = AH + 1
+      AF = 1
+      CF = 1
+  else
+      AF = 0
+      CF = 0
+  clear high nibble of AL
+  ```
+* **Example:**
+  ```assembly
+  MOV AX, 15 ; AH = 00, AL = 0Fh
+  AAA        ; AH = 01, AL = 05
+  RET
+  ```
+* **Flags Affected:** `C:r`, `Z:?`, `S:?`, `O:?`, `P:?`, `A:r` *(r = modified according to result, ? = undefined)*
+
+---
+
+### AAD
+* **Operands:** No operands
+* **Description:** ASCII Adjust before Division. Prepares two unpacked BCD digits for division.
+* **Algorithm:**
+  ```text
+  AL = (AH * 10) + AL
+  AH = 0
+  ```
+* **Example:**
+  ```assembly
+  MOV AX, 0105h ; AH = 01, AL = 05
+  AAD           ; AH = 00, AL = 0Fh (15)
+  RET
+  ```
+* **Flags Affected:** `C:?`, `Z:r`, `S:r`, `O:?`, `P:r`, `A:?`
+
+---
+
+### AAM
+* **Operands:** No operands
+* **Description:** ASCII Adjust after Multiplication. Corrects the product of two unpacked BCD digits.
+* **Algorithm:**
+  ```text
+  AH = AL / 10
+  AL = remainder
+  ```
+* **Example:**
+  ```assembly
+  MOV AL, 15 ; AL = 0Fh
+  AAM        ; AH = 01, AL = 05
+  RET
+  ```
+* **Flags Affected:** `C:?`, `Z:r`, `S:r`, `O:?`, `P:r`, `A:?`
+
+---
+
+### AAS
+* **Operands:** No operands
+* **Description:** ASCII Adjust after Subtraction. Corrects result in `AH` and `AL` after subtraction for BCD values.
+* **Algorithm:**
+  ```text
+  if low nibble of AL > 9 or AF = 1 then:
+      AL = AL - 6
+      AH = AH - 1
+      AF = 1
+      CF = 1
+  else
+      AF = 0
+      CF = 0
+  clear high nibble of AL
+  ```
+* **Flags Affected:** `C:r`, `Z:?`, `S:?`, `O:?`, `P:?`, `A:r`
+
+---
+
+### ADC
+* **Operands:** `REG, memory` | `memory, REG` | `REG, REG` | `memory, immediate` | `REG, immediate`
+* **Description:** Add with Carry. Computes `operand1 + operand2 + CF` and stores result in `operand1`.
+* **Example:**
+  ```assembly
+  STC        ; set CF = 1
+  MOV AL, 5  ; AL = 5
+  ADC AL, 1  ; AL = 7
+  RET
+  ```
+* **Flags Affected:** `C:r`, `Z:r`, `S:r`, `O:r`, `P:r`, `A:r`
+
+---
+
+### ADD
+* **Operands:** `REG, memory` | `memory, REG` | `REG, REG` | `memory, immediate` | `REG, immediate`
+* **Description:** Add. Computes `operand1 + operand2` and stores result in `operand1`.
+* **Example:**
+  ```assembly
+  MOV AL, 5  ; AL = 5
+  ADD AL, -3 ; AL = 2
+  RET
+  ```
+* **Flags Affected:** `C:r`, `Z:r`, `S:r`, `O:r`, `P:r`, `A:r`
+
+---
+
+### AND
+* **Operands:** `REG, memory` | `memory, REG` | `REG, REG` | `memory, immediate` | `REG, immediate`
+* **Description:** Bitwise Logical AND between two operands. Clears `OF` and `CF`.
+* **Flags Affected:** `C:0`, `Z:r`, `S:r`, `O:0`, `P:r`, `A:?`
+
+---
+
+### CALL
+* **Operands:** `procedure name` | `label`
+* **Description:** Puts the next instruction address onto the stack and jumps to target location.
+
+---
+
+### CBW
+* **Operands:** No operands
+* **Description:** Convert Byte to Word. Sign-extends `AL` into `AH`.
+* **Algorithm:**
+  ```text
+  if high bit of AL = 1 then AH = 0FFh else AH = 0
+  ```
+* **Flags Affected:** Unchanged
+
+---
+
+### CLC
+* **Operands:** No operands
+* **Description:** Clear Carry Flag (`CF = 0`).
+* **Flags Affected:** `C:0`
+
+---
+
+### CLD
+* **Operands:** No operands
+* **Description:** Clear Direction Flag (`DF = 0`). String operations will auto-increment pointer registers (`SI`, `DI`).
+* **Flags Affected:** `D:0`
+
+---
+
+### CLI
+* **Operands:** No operands
+* **Description:** Clear Interrupt Enable Flag (`IF = 0`). Disables maskable hardware interrupts.
+* **Flags Affected:** `I:0`
+
+---
+
+### CMC
+* **Operands:** No operands
+* **Description:** Complement Carry Flag. Toggles `CF` value.
+* **Flags Affected:** `C:r`
+
+---
+
+### CMP
+* **Operands:** `REG, memory` | `memory, REG` | `REG, REG` | `memory, immediate` | `REG, immediate`
+* **Description:** Compare operands. Substracts `operand2` from `operand1` to set flags without altering either operand.
+* **Flags Affected:** `C:r`, `Z:r`, `S:r`, `O:r`, `P:r`, `A:r`
+
+---
+
+### CMPSB / CMPSW
+* **Operands:** No operands
+* **Description:** Compare Bytes/Words in memory (`DS:[SI]` vs `ES:[DI]`), updating flags, and adjusting `SI`/`DI` relative to `DF`.
+* **Flags Affected:** `C:r`, `Z:r`, `S:r`, `O:r`, `P:r`, `A:r`
+
+---
+
+### CWD
+* **Operands:** No operands
+* **Description:** Convert Word to Double Word. Sign-extends `AX` into `DX`.
+* **Flags Affected:** Unchanged
+
+---
+
+### DAA
+* **Operands:** No operands
+* **Description:** Decimal Adjust after Addition. Adjusts packed BCD sum in `AL`.
+* **Flags Affected:** `C:r`, `Z:r`, `S:r`, `O:?`, `P:r`, `A:r`
+
+---
+
+### DAS
+* **Operands:** No operands
+* **Description:** Decimal Adjust after Subtraction. Corrects packed BCD difference in `AL`.
+* **Flags Affected:** `C:r`, `Z:r`, `S:r`, `O:?`, `P:r`, `A:r`
+
+---
+
+### DEC
+* **Operands:** `REG` | `memory`
+* **Description:** Decrement operand by 1. Note: Does **not** affect the Carry Flag (`CF`).
+* **Flags Affected:** `Z:r`, `S:r`, `O:r`, `P:r`, `A:r`
+
+---
+
+### DIV
+* **Operands:** `REG` | `memory`
+* **Description:** Unsigned division. 
+  * If 8-bit divisor: `AX / operand` $
+ightarrow$ Quotient in `AL`, Remainder in `AH`.
+  * If 16-bit divisor: `DX:AX / operand` $
+ightarrow$ Quotient in `AX`, Remainder in `DX`.
+* **Flags Affected:** All flags undefined.
+
+---
+
+### HLT
+* **Operands:** No operands
+* **Description:** Halt. Puts the CPU into a sleep state until an external interrupt occurs.
+
+---
+
+### IDIV
+* **Operands:** `REG` | `memory`
+* **Description:** Signed division. Follows same register routing as `DIV`.
+
+---
+
+### IMUL
+* **Operands:** `REG` | `memory`
+* **Description:** Signed multiplication. Updates `CF` and `OF` if high part of result is not a sign-extension.
+
+---
+
+### IN
+* **Operands:** `AL, immedByte` | `AX, immedByte` | `AL, DX` | `AX, DX`
+* **Description:** Input from Port. Reads data from I/O peripheral into `AL` or `AX`.
+
+---
+
+### INC
+* **Operands:** `REG` | `memory`
+* **Description:** Increment operand by 1. Does **not** affect `CF`.
+* **Flags Affected:** `Z:r`, `S:r`, `O:r`, `P:r`, `A:r`
+
+---
+
+### INT
+* **Operands:** `immediate`
+* **Description:** Software Interrupt. Executes vector routine designated by operand index.
+
+---
+
+### INTO
+* **Operands:** No operands
+* **Description:** Interrupt on Overflow. Triggers `INT 4` handler if `OF` is set.
+
+---
+
+### IRET
+* **Operands:** No operands
+* **Description:** Interrupt Return. Pops `IP`, `CS`, and `FLAGS` registers to restore state.
+
+---
+
+### JMP
+* **Operands:** `label`
+* **Description:** Unconditional jump to specific code offset.
+
+---
+
+### LEA
+* **Operands:** `REG, memory`
+* **Description:** Load Effective Address. Computes and transfers memory target's address offset to destination register.
+
+---
+
+### LODSB / LODSW
+* **Operands:** No operands
+* **Description:** Load string byte/word at `DS:[SI]` into `AL`/`AX` and update `SI` offset.
+
+---
+
+### MOV
+* **Operands:** `REG, memory` | `memory, REG` | `REG, REG` | `memory, immediate` | `REG, immediate` | `SREG, memory` | `memory, SREG` | `REG, SREG` | `SREG, REG`
+* **Description:** Move. Copies data from source to destination operand.
+* **Flags Affected:** Unchanged
+
+---
+
+### MUL
+* **Operands:** `REG` | `memory`
+* **Description:** Unsigned multiplication.
+  * If 8-bit source: `AL * operand` $
+ightarrow$ Result in `AX`. `CF` and `OF` set if `AH != 0`.
+  * If 16-bit source: `AX * operand` $
+ightarrow$ Result in `DX:AX`. `CF` and `OF` set if `DX != 0`.
+
+---
+
+### NEG
+* **Operands:** `REG` | `memory`
+* **Description:** Two's Complement Negation. Inverts all bits and adds 1.
+* **Flags Affected:** `C:r`, `Z:r`, `S:r`, `O:r`, `P:r`, `A:r`
+
+---
+
+### NOP
+* **Operands:** No operands
+* **Description:** No Operation. Consumes 3 clock cycles (internally maps to `XCHG AX, AX`).
+
+---
+
+### NOT
+* **Operands:** `REG` | `memory`
+* **Description:** One's Complement Bitwise Inversion.
+* **Flags Affected:** Unchanged
+
+---
+
+### OR
+* **Operands:** `REG, memory` | `memory, REG` | `REG, REG` | `memory, immediate` | `REG, immediate`
+* **Description:** Bitwise Logical Inclusive OR.
+* **Flags Affected:** `C:0`, `Z:r`, `S:r`, `O:0`, `P:r`, `A:?`
+
+---
+
+### OUT
+* **Operands:** `immedByte, AL` | `immedByte, AX` | `DX, AL` | `DX, AX`
+* **Description:** Output to Port. Transmits `AL`/`AX` contents to specified I/O address.
+
+---
+
+### POP / POPF
+* **Operands:** `REG` | `memory` | `SREG` | (None for POPF)
+* **Description:** Retrieves top-of-stack word element and shifts `SP = SP + 2`. `POPF` loads values directly into the `FLAGS` register.
+
+---
+
+### PUSH / PUSHF
+* **Operands:** `REG` | `memory` | `SREG` | (None for PUSHF)
+* **Description:** Decrements `SP = SP - 2` and pushes operand to current stack memory block.
+
+---
+
+### REP / REPE / REPZ / REPNE / REPNZ
+* **Operands:** String primitive instruction
+* **Description:** Repeats the chained string instruction while condition matches and `CX != 0`.
+
+---
+
+### RET / RETF
+* **Operands:** Optional `immediate` (stack layout clear modifier)
+* **Description:** Return near/far from procedure block by popping target values back to `IP` and `CS`.
+
+---
+
+### SHL / SAL
+* **Operands:** `REG, 1` | `memory, 1` | `REG, CL` | `memory, CL`
+* **Description:** Shift Left / Shift Arithmetic Left. Fills shifted LSB positions with `0`. High bit shifts out into `CF`.
+
+---
+
+### SHR
+* **Operands:** Same as `SHL`
+* **Description:** Logical Shift Right. Fills shifted MSB positions with `0`. Low bit shifts out into `CF`.
+
+---
+
+### SAR
+* **Operands:** Same as `SHL`
+* **Description:** Arithmetic Shift Right. Preserves sign bit at MSB position during right-shift sequence.
+
+---
+
+### ROL / ROR
+* **Operands:** Same as `SHL`
+* **Description:** Rotate Left / Rotate Right. Bit values wrapped circularly back to alternate edge.
+
+---
+
+### SCASB / SCASW
+* **Operands:** No operands
+* **Description:** Scan memory string byte/word at `ES:[DI]` comparing against accumulator register contents (`AL`/`AX`).
+
+---
+
+### STC / STD / STI
+* **Operands:** No operands
+* **Description:** Set Flag Operations. `STC` configures `CF=1`, `STD` configures `DF=1`, `STI` configures `IF=1`.
+
+---
+
+### SUB / SBB
+* **Operands:** `REG, memory` | `memory, REG` | `REG, REG` | `memory, immediate` | `REG, immediate`
+* **Description:** Subtract / Subtract with Borrow. Computes difference between operands (incorporating `CF` flag value for `SBB`).
+
+---
+
+### TEST
+* **Operands:** `REG, memory` | `memory, REG` | `REG, REG` | `memory, immediate` | `REG, immediate`
+* **Description:** Logical test via bitwise AND. Updates flags without altering operands (`CF=0, OF=0`).
+* **Flags Affected:** `C:0`, `Z:r`, `S:r`, `O:0`, `P:r`, `A:?`
+
+---
+
+### XCHG
+* **Operands:** `REG, memory` | `memory, REG` | `REG, REG`
+* **Description:** Exchange. Swaps contents of source and destination elements.
+
+---
+
+### XLAT
+* **Operands:** No operands
+* **Description:** Translate byte lookup table. Translates value in `AL` using a lookup table at offset `DS:[BX]`.
+
+---
+
+### XOR
+* **Operands:** `REG, memory` | `memory, REG` | `REG, REG` | `memory, immediate` | `REG, immediate`
+* **Description:** Bitwise Logical Exclusive OR.
+* **Flags Affected:** `C:0`, `Z:r`, `S:r`, `O:0`, `P:r`, `A:?`
