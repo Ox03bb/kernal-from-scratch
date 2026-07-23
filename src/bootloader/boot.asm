@@ -4,8 +4,25 @@
 CODE_SEG equ gdt_code - gdt_start
 DATA_SEG equ gdt_data - gdt_start
 
+KERNEL_LOAD_SEG equ 0x1000
+KERNEL_START_ADDR equ 0x100000
 
-jmp _start
+
+
+;Load kernel
+mov bx, KERNEL_LOAD_SEG
+mov dh, 0x00
+mov dl, 0x80
+mov cl, 0x02
+mov ch, 0x00
+mov ah, 0x02
+mov al, 8
+int 0x13
+
+jc disk_read_error
+
+
+jmp start
 
 msg db 13, 10,"Welcom to my bootLoader", 13, 10
     db "press any key to continue...", 0
@@ -35,10 +52,7 @@ clear_screen:
     mov ax, 0x0003
     int 0x10
     ret
-
-
-
-_start:
+start:
 
 call clear_screen
 
@@ -53,12 +67,30 @@ call print
 
 jmp end
 
+
+;Load kernel
+mov bx, KERNEL_LOAD_SEG ; this is the segment where we want to load the kernel
+mov dh, 0x00 ; head number
+mov dl, 0x80 ; drive number
+mov cl, 0x02 ; sector number
+mov ch, 0x00 ; cylinder number
+mov ah, 0x02 ; function 02h - read sectors
+mov al, 8    ; number of sectors to read
+int 0x13     ; int 13h - BIOS disk services
+
+jc disk_read_error
+
+
 PM_start:
     CLI
     LGDT[gdt_descriptor]
     MOV eax, cr0
     OR eax, 1
     MOV cr0, eax 
+
+disk_read_error:
+    hlt
+
 gdt_start:
     gdt_null:
         dq 0x0
