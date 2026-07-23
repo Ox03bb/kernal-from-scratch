@@ -1,76 +1,123 @@
 SRC_DIR := src
+INCLUDE_DIR := includes
 BUILD_DIR := build
-
 BIN_DIR := bin
 
-FLAGS :=
+BOOT_ASM := $(SRC_DIR)/bootloader/boot.asm
+KERNEL_ASM := $(SRC_DIR)/kernal/entry.asm
+KERNEL_C := $(SRC_DIR)/kernal/kernal.c
+LINKER_SCRIPT := linker.ld
 
-BOOT_DIR := $(SRC_DIR)/bootloader
+BOOT_BIN := $(BIN_DIR)/boot.bin
+KERNEL_ASM_O := $(BUILD_DIR)/kernel.asm.o
+KERNEL_O := $(BUILD_DIR)/kernel.o
+KERNEL_BIN := $(BIN_DIR)/kernel.bin
+OS_BIN := $(BIN_DIR)/os.bin
+COMPLETE_KERNEL := $(BUILD_DIR)/completeKernel.o
 
-BOOT_SRC := $(BOOT_DIR)/boot.asm
+ASM := nasm
+CC := i686-elf-gcc
+LD := i686-elf-ld
 
-BOOT_BIN := $(BUILD_DIR)/boot.bin
-DISK_IMG := $(BUILD_DIR)/disk.img
+DOCKER_IMAGE := cc
+DOCKER_RUN := docker run --rm \
+	--user $(shell id -u):$(shell id -g) \
+	-v $(CURDIR):/work \
+	-w /work \
+	$(DOCKER_IMAGE)
 
-all: $(BOOT_BIN) $(DISK_IMG)
+CFLAGS := \
+	-g \
+	-O0 \
+	-Wall \
+	-std=gnu99 \
+	-ffreestanding \
+	-nostdlib \
+	-nostartfiles \
+	-nodefaultlibs \
+	-I$(INCLUDE_DIR)
 
-# Build directory
+.PHONY: all clean run debug os-image-host
+
+all: $(OS_BIN)
+
+#====================================================
+# Build inside Docker
+#====================================================
+
+$(OS_BIN): $(BOOT_ASM) $(KERNEL_ASM) $(KERNEL_C) $(LINKER_SCRIPT)
+	$(DOCKER_RUN) make -f /work/Makefile os-image-host
+
+#====================================================
+# Executed inside Docker
+#====================================================
+
+os-image-host: $(BOOT_BIN) $(KERNEL_BIN)
+	@cat $(BOOT_BIN) > $(OS_BIN)
+	@cat $(KERNEL_BIN) >> $(OS_BIN)
+	@dd if=/dev/zero bs=512 count=8 >> $(OS_BIN) status=none
+	@chmod 644 $(OS_BIN)
+
+#====================================================
+# Bootloader
+#====================================================
+
+$(BOOT_BIN): $(BOOT_ASM) | $(BIN_DIR)
+	$(ASM) -f bin $< -o $@
+
+#====================================================
+# Kernel
+#====================================================
+
+$(KERNEL_ASM_O): $(KERNEL_ASM) | $(BUILD_DIR)
+	$(ASM) -f elf32 -g $< -o $@
+
+$(KERNEL_O): $(KERNEL_C) | $(BUILD_DIR)
+	$(CC) $(CFLAGS) -c $< -o $@
+
+$(COMPLETE_KERNEL): $(KERNEL_ASM_O) $(KERNEL_O) | $(BUILD_DIR)
+	$(LD) -r $^ -o $@
+
+$(KERNEL_BIN): $(COMPLETE_KERNEL) $(LINKER_SCRIPT) | $(BIN_DIR)
+	$(CC) $(CFLAGS) \
+		-T $(LINKER_SCRIPT) \
+		-o $@ \
+		$(COMPLETE_KERNEL)
+
+#====================================================
+# Directories
+#====================================================
+
 $(BUILD_DIR):
-	mkdir -p $(BUILD_DIR)
+	mkdir -p $@
 
-# Ensure bin directory exists as well
 $(BIN_DIR):
-	mkdir -p $(BIN_DIR)
+	mkdir -p $@
 
-# Boot sector
-$(BOOT_BIN): $(BOOT_SRC) | $(BUILD_DIR)
-	nasm -f bin $< -o $@
-
-# Disk image
-$(DISK_IMG): $(BOOT_BIN)
-	dd if=/dev/zero of=$@ bs=512 count=2880
-	dd if=$(BOOT_BIN) of=$@ conv=notrunc
-
-
-
+#====================================================
 # Run
-run: $(DISK_IMG)
-	qemu-system-x86_64 \
-		-drive format=raw,file=$<
+#====================================================
 
-# Start QEMU waiting for GDB
-debug: $(DISK_IMG)
-	qemu-system-x86_64 \
-		-drive format=raw,file=$< \
-		-S \
-		-s
+run: $(OS_BIN)
+	qemu-system-i386 \
+		-drive file=$(OS_BIN),format=raw \
+		-m 512M \
+		-serial stdio
 
-# Connect GDB
-gdb:
-	pwndbg -x conf.gdb
+#====================================================
+# Debug
+#====================================================
 
+debug: $(OS_BIN)
+	qemu-system-i386 \
+		-drive file=$(OS_BIN),format=raw \
+		-m 512M \
+		-serial stdio \
+		-S -s
+
+#====================================================
 # Clean
+#====================================================
+
 clean:
-	rm -rf $(BUILD_DIR)
-
-.PHONY: all run debug gdb clean
-
-# Kernel build
-KERNEL_DIR := $(SRC_DIR)/kernal
-KERNEL_ASM := $(KERNEL_DIR)/entry.asm
-KERNEL_C := $(KERNEL_DIR)/kernal.c
-
-$(BUILD_DIR)/kernel.asm.o: $(KERNEL_ASM) | $(BUILD_DIR)
-	nasm -f elf -g $< -o $@
-
-$(BUILD_DIR)/kernel.o: $(KERNEL_C) | $(BUILD_DIR)
-	i686-elf-gcc -I$(SRC_DIR) $(FLAGS) -std=gnu99 -c $< -o $@
-
-$(BUILD_DIR)/completeKernel.o: $(BUILD_DIR)/kernel.asm.o $(BUILD_DIR)/kernel.o
-	i686-elf-ld -g -relocatable $^ -o $@
-
-$(BIN_DIR)/kernel.bin: $(BUILD_DIR)/completeKernel.o | $(BIN_DIR)
-	i686-elf-gcc $(FLAGS) -T ./linker.ld -o $@ -ffreestanding -O0 -nostdlib $(BUILD_DIR)/completeKernel.o
-
-.PHONY: kernel
-kernel: $(BIN_DIR)/kernel.bin
+	rm -rf $(BUILD_DIR) $(BIN_DIR)
