@@ -4,8 +4,34 @@ global _start
 extern kernal_main
 
 _start:
+    call print_kernel_loaded
     call kernal_main
-    cli
-    hlt
-    jmp $
 
+    cli
+.hang:
+    hlt
+    jmp .hang
+
+; ----------------------------------------
+; Print "Kernel is loaded"
+; ----------------------------------------
+print_kernel_loaded:
+    pushad
+
+    mov edi, 0xB8000          ; VGA text buffer
+    mov esi, kernel_msg
+
+.print:
+    lodsb                     ; AL = *ESI++
+    test al, al
+    jz .done
+
+    mov ah, 0x0F              ; White text on black background
+    stosw                     ; Write AX (character + attribute)
+    jmp .print
+
+.done:
+    popad
+    ret
+
+kernel_msg db "Hello from kernel!", 0
