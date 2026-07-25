@@ -3,29 +3,35 @@ INCLUDE_DIR := includes
 BUILD_DIR := build
 BIN_DIR := bin
 
+# Find all assembly and C source files in kernal directory and subdirectories
+KERNEL_ASM_SRCS := $(shell find $(SRC_DIR)/kernal -name '*.asm' -o -name '*.s')
+KERNEL_C_SRCS := $(shell find $(SRC_DIR)/kernal -name '*.c')
+
+# Bootloader
 BOOT_ASM := $(SRC_DIR)/bootloader/boot.asm
-KERNEL_ASM := $(SRC_DIR)/kernal/entry.asm
-KERNEL_C := $(SRC_DIR)/kernal/kernal.c
+BOOT_BIN := $(BIN_DIR)/boot.bin
+
+# Output file
+OS_BIN := $(BIN_DIR)/os.bin
+
+# Linker script
 LINKER_SCRIPT := linker.ld
 
-BOOT_BIN := $(BIN_DIR)/boot.bin
-KERNEL_ASM_O := $(BUILD_DIR)/kernel.asm.o
-KERNEL_O := $(BUILD_DIR)/kernel.o
-KERNEL_BIN := $(BIN_DIR)/kernel.bin
-OS_BIN := $(BIN_DIR)/os.bin
-COMPLETE_KERNEL := $(BUILD_DIR)/completeKernel.o
-
+# Tools (as they appear in the Docker image)
 ASM := nasm
 CC := i686-elf-gcc
 LD := i686-elf-ld
 
+# Docker settings
 DOCKER_IMAGE := cc
 DOCKER_RUN := docker run --rm \
 	--user $(shell id -u):$(shell id -g) \
 	-v $(CURDIR):/work \
 	-w /work \
+	-e PATH=/home/linuxbrew/.linuxbrew/bin:$$PATH \
 	$(DOCKER_IMAGE)
 
+# Compiler flags
 CFLAGS := \
 	-g \
 	-O0 \
@@ -37,62 +43,30 @@ CFLAGS := \
 	-nodefaultlibs \
 	-I$(INCLUDE_DIR)
 
-.PHONY: all clean run debug os-image-host
+.PHONY: all clean run debug
 
 all: $(OS_BIN)
 
 #====================================================
-# Build inside Docker
+# Build kernel inside Docker
 #====================================================
 
-$(OS_BIN): $(BOOT_ASM) $(KERNEL_ASM) $(KERNEL_C) $(LINKER_SCRIPT)
-	$(DOCKER_RUN) make -f /work/Makefile os-image-host
-
-#====================================================
-# Executed inside Docker
-#====================================================
-
-os-image-host: $(BOOT_BIN) $(KERNEL_BIN)
-	@cat $(BOOT_BIN) > $(OS_BIN)
-	@cat $(KERNEL_BIN) >> $(OS_BIN)
-	@dd if=/dev/zero bs=512 count=8 >> $(OS_BIN) status=none
-	@chmod 644 $(OS_BIN)
-
-#====================================================
-# Bootloader
-#====================================================
-
-$(BOOT_BIN): $(BOOT_ASM) | $(BIN_DIR)
-	$(ASM) -f bin $< -o $@
-
-#====================================================
-# Kernel
-#====================================================
-
-$(KERNEL_ASM_O): $(KERNEL_ASM) | $(BUILD_DIR)
-	$(ASM) -f elf32 -g $< -o $@
-
-$(KERNEL_O): $(KERNEL_C) | $(BUILD_DIR)
-	$(CC) $(CFLAGS) -c $< -o $@
-
-$(COMPLETE_KERNEL): $(KERNEL_ASM_O) $(KERNEL_O) | $(BUILD_DIR)
-	$(LD) -r $^ -o $@
-
-$(KERNEL_BIN): $(COMPLETE_KERNEL) $(LINKER_SCRIPT) | $(BIN_DIR)
-	$(CC) $(CFLAGS) \
-		-T $(LINKER_SCRIPT) \
-		-o $@ \
-		$(COMPLETE_KERNEL)
-
-#====================================================
-# Directories
-#====================================================
-
-$(BUILD_DIR):
-	mkdir -p $@
-
-$(BIN_DIR):
-	mkdir -p $@
+$(OS_BIN): $(BOOT_ASM) $(KERNEL_ASM_SRCS) $(KERNEL_C_SRCS) $(LINKER_SCRIPT)
+	@echo "Building kernel in Docker..."
+	@mkdir -p $(BIN_DIR)
+	$(DOCKER_RUN) /bin/bash -c '\
+		mkdir -p build/kernal bin && \
+		nasm -f bin src/bootloader/boot.asm -o bin/boot.bin && \
+		$(foreach src,$(KERNEL_ASM_SRCS),nasm -f elf32 -g $(src) -o build/$(subst src/,,$(src:.asm=.asm.o)) &&) \
+		$(foreach src,$(KERNEL_C_SRCS),i686-elf-gcc $(CFLAGS) -c $(src) -o build/$(subst src/,,$(src:.c=.o)) &&) \
+		i686-elf-ld -r -o build/kernal-linked.o build/kernal/*.o && \
+		i686-elf-gcc $(CFLAGS) -T linker.ld -o bin/kernel.bin build/kernal-linked.o && \
+		cat bin/boot.bin > bin/os.bin && \
+		cat bin/kernel.bin >> bin/os.bin && \
+		dd if=/dev/zero bs=512 count=8 >> bin/os.bin status=none && \
+		chmod 644 bin/os.bin && \
+		echo "Kernel built successfully: bin/os.bin"\
+	'
 
 #====================================================
 # Run
