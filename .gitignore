@@ -58,3 +58,6 @@ dkms.conf
 .gdb*
 *.log
 *.img
+
+
+.vscode
