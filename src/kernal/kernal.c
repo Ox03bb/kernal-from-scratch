@@ -1,5 +1,4 @@
 #include "kernal.h"
+#include "vga.h"
 
-void kernal_main(){
-    
-}
+void kernal_main() { return; }

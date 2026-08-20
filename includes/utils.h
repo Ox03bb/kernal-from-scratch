@@ -1,7 +1,9 @@
 #ifndef UTILS_H
 #define UTILS_H
 
-inline void outb(uint8_t value ,uint16_t port);
-inline void inb(uint8_t value ,uint16_t port);
+#include <stdint.h>
+
+inline void outb(uint16_t port, uint8_t value);
+inline uint8_t inb(uint16_t port);
 
 #endif
