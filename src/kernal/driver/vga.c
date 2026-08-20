@@ -1,6 +1,43 @@
 #include "vga.h"
 #include "utils.h"
 
+static uint8_t cursor_x = 0;
+static uint8_t cursor_y = 0;
+static uint16_t cursor_position = 0;
+static uint8_t current_color = LIGHT_GRAY;
+static volatile uint16_t *vga_buf;
+
+void vga_init(void){
+    cursor_x = 0;
+    cursor_y = 0;
+    cursor_position = 0;
+    current_color = LIGHT_GRAY;
+
+    vga_buf = (volatile uint16_t *)VGA_ADDRESS;
+
+    vga_clear();
+
+    vga_set_cursor(0, 0);
+    vga_cursor_enable();
+
+}   
+
+// Print
+
+void vga_print_char(char c){
+    uint16_t  cc = (current_color << 8 | c );
+
+    vga_buf[cursor_position] = cc;
+
+    vga_set_cursor_position((cursor_position + 1));
+}
+
+
+void vga_set_color(uint8_t foreground, uint8_t background){
+    current_color = ( background << 4 | foreground );
+}
+
+// Cursor Enabling 
 void vga_cursor_enable(void) {
     outb(VGA_INDEX_PORT, VGA_CURSOR_START);
     outb(VGA_DATA_PORT, 0x06);
@@ -14,6 +51,8 @@ void vga_cursor_disable(void) {
     outb(VGA_DATA_PORT, 0x20);
 }
 
+// Cursor position
+
 void vga_set_cursor(uint8_t x, uint8_t y) {
     uint16_t p = y * VGA_WIDTH + x;
 
@@ -22,7 +61,25 @@ void vga_set_cursor(uint8_t x, uint8_t y) {
 
     outb(VGA_INDEX_PORT, VGA_CURSOR_LOW);
     outb(VGA_DATA_PORT, p & 0xff);
+
+    cursor_x = x;
+    cursor_y = y;
+    cursor_position = p;
 }
+
+void vga_set_cursor_position(uint16_t p) {
+
+    outb(VGA_INDEX_PORT, VGA_CURSOR_HIGH);
+    outb(VGA_DATA_PORT, (p >> 8));
+
+    outb(VGA_INDEX_PORT, VGA_CURSOR_LOW);
+    outb(VGA_DATA_PORT, p & 0xff);
+
+    cursor_position = p;
+    cursor_x = p % VGA_WIDTH;
+    cursor_y = p / VGA_WIDTH;
+}
+
 
 uint16_t vga_get_cursor_position(void) {
 
@@ -39,13 +96,15 @@ uint8_t vga_get_cursor_x(void) { return vga_get_cursor_position() % VGA_WIDTH; }
 
 uint8_t vga_get_cursor_y(void) { return vga_get_cursor_position() / VGA_WIDTH; }
 
+
+// Clear
+
 void vga_clear(void) {
-    volatile uint16_t *vga_buff = (uint16_t *)VGA_ADDRESS;
 
     vga_set_cursor(0, 0);
 
     for (int i = 0; i < VGA_RES; i++) {
-        vga_buff[i] = ' ' | ((uint16_t)0 << 8);
+        vga_buf[i] =  ((uint16_t)0 << 8) | ' ';
     }
 
     vga_set_cursor(0, 0);

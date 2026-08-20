@@ -18,16 +18,17 @@
 #define VGA_CURSOR_START 0x0A
 #define VGA_CURSOR_END   0x0B
 
-#define BLACK      0 // DARK_GRAY
-#define BLUE       1 // LIGHT_BLUE
-#define GREEN      2 // LIGHT_GREEN
-#define CYAN       3 // LIGHT_CYAN
-#define RED        4 // LIGHT_RED
-#define MAGENTA    5 // LIGHT_MAGENTA
-#define BROWN      6 // YELLOW
-#define LIGHT_GRAY 7 // WHITE
+#define BLACK      0x00 // DARK_GRAY
+#define BLUE       0x01 // LIGHT_BLUE
+#define GREEN      0x02 // LIGHT_GREEN
+#define CYAN       0x03 // LIGHT_CYAN
+#define RED        0x04 // LIGHT_RED
+#define MAGENTA    0x05 // LIGHT_MAGENTA
+#define BROWN      0x06 // YELLOW
+#define LIGHT_GRAY 0x07 // WHITE
 
-#define LIGHT_FLAG 8
+#define LIGHT_FLAG 0x08
+
 
 typedef union vga_entry {
     uint16_t value;
@@ -42,17 +43,27 @@ void vga_init(void);
 
 void vga_clear(void);
 
-void vga_put_char(char c);
 
-void vga_write(const char *str);
+void vga_print_char(char c);
+
+void vga_print(const char *str);
+
+
+void vga_scan_char(char c);
+
+void vga_scan(const char *str);
 
 void vga_set_color(uint8_t foreground, uint8_t background);
+
 
 void vga_cursor_enable(void);
 
 void vga_cursor_disable(void);
 
+
 void vga_set_cursor(uint8_t x, uint8_t y);
+
+void vga_set_cursor_position(uint16_t p);
 
 uint16_t vga_get_cursor_position(void);
 
