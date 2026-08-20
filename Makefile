@@ -3,9 +3,9 @@ INCLUDE_DIR := includes
 BUILD_DIR := build
 BIN_DIR := bin
 
-# Find all assembly and C source files in kernal directory and subdirectories
+# Find all assembly source files in kernal and all C source files in src
 KERNEL_ASM_SRCS := $(shell find $(SRC_DIR)/kernal -name '*.asm' -o -name '*.s')
-KERNEL_C_SRCS := $(shell find $(SRC_DIR)/kernal -name '*.c')
+KERNEL_C_SRCS := $(shell find $(SRC_DIR) -name '*.c')
 
 # Bootloader
 BOOT_ASM := $(SRC_DIR)/bootloader/boot.asm
@@ -21,6 +21,8 @@ LINKER_SCRIPT := linker.ld
 ASM := nasm
 CC := i686-elf-gcc
 LD := i686-elf-ld
+CLANG_FORMAT := clang-format
+CLANG_TIDY := clang-tidy
 
 # Docker settings
 DOCKER_IMAGE := cc
@@ -43,7 +45,7 @@ CFLAGS := \
 	-nodefaultlibs \
 	-I$(INCLUDE_DIR)
 
-.PHONY: all clean run debug
+.PHONY: all clean run debug format format-check lint
 
 all: $(OS_BIN)
 
@@ -57,9 +59,9 @@ $(OS_BIN): $(BOOT_ASM) $(KERNEL_ASM_SRCS) $(KERNEL_C_SRCS) $(LINKER_SCRIPT)
 	$(DOCKER_RUN) /bin/bash -c '\
 		mkdir -p build/kernal bin && \
 		nasm -f bin src/bootloader/boot.asm -o bin/boot.bin && \
-		$(foreach src,$(KERNEL_ASM_SRCS),nasm -f elf32 -g $(src) -o build/$(subst src/,,$(src:.asm=.asm.o)) &&) \
-		$(foreach src,$(KERNEL_C_SRCS),i686-elf-gcc $(CFLAGS) -c $(src) -o build/$(subst src/,,$(src:.c=.o)) &&) \
-		i686-elf-ld -r -o build/kernal-linked.o build/kernal/*.o && \
+		$(foreach src,$(KERNEL_ASM_SRCS),mkdir -p $(dir build/$(subst src/,,$(src:.asm=.asm.o))) && nasm -f elf32 -g $(src) -o build/$(subst src/,,$(src:.asm=.asm.o)) &&) \
+		$(foreach src,$(KERNEL_C_SRCS),mkdir -p $(dir build/$(subst src/,,$(src:.c=.o))) && i686-elf-gcc $(CFLAGS) -c $(src) -o build/$(subst src/,,$(src:.c=.o)) &&) \
+		i686-elf-ld -r -o build/kernal-linked.o $$(find build -name "*.o" ! -name "kernal-linked.o") && \
 		i686-elf-gcc $(CFLAGS) -T linker.ld -o bin/kernel.bin build/kernal-linked.o && \
 		cat bin/boot.bin > bin/os.bin && \
 		cat bin/kernel.bin >> bin/os.bin && \
@@ -92,6 +94,15 @@ debug: $(OS_BIN)
 #====================================================
 # Clean
 #====================================================
+
+format:
+	find $(SRC_DIR) $(INCLUDE_DIR) -type f \( -name '*.c' -o -name '*.h' \) -exec $(CLANG_FORMAT) -i {} +
+
+format-check:
+	find $(SRC_DIR) $(INCLUDE_DIR) -type f \( -name '*.c' -o -name '*.h' \) -exec $(CLANG_FORMAT) --dry-run --Werror {} +
+
+lint:
+	find $(SRC_DIR) -type f -name '*.c' -exec $(CLANG_TIDY) {} -- -I$(INCLUDE_DIR) -std=gnu99 -ffreestanding -target i386-elf \;
 
 clean:
 	rm -rf $(BUILD_DIR) $(BIN_DIR)
