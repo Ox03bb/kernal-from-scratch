@@ -25,13 +25,22 @@ void vga_init(void){
 // Print
 
 void vga_print_char(char c){
-    uint16_t  cc = (current_color << 8 | c );
 
-    vga_buf[cursor_position] = cc;
+    vga_buf[cursor_position] =  (current_color << 8 | c );
 
     vga_set_cursor_position((cursor_position + 1));
 }
 
+
+void vga_print(const char *str){
+    if (str == 0) {
+        return;
+    }
+
+    for (uint64_t i = 0; str[i] != '\0'; i++) {
+        vga_print_char(str[i]);
+    }
+}
 
 void vga_set_color(uint8_t foreground, uint8_t background){
     current_color = ( background << 4 | foreground );

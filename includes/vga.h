@@ -46,7 +46,7 @@ void vga_clear(void);
 
 void vga_print_char(char c);
 
-void vga_print(const char *str);
+void vga_print( const char *str);
 
 
 void vga_scan_char(char c);
