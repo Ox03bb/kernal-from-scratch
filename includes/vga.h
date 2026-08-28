@@ -29,7 +29,6 @@
 
 #define LIGHT_FLAG 0x08
 
-
 typedef union vga_entry {
     uint16_t value;
 
@@ -43,11 +42,9 @@ void vga_init(void);
 
 void vga_clear(void);
 
-
 void vga_print_char(char c);
 
-void vga_print( const char *str);
-
+void vga_print(const char *str);
 
 void vga_scan_char(char c);
 
@@ -55,11 +52,9 @@ void vga_scan(const char *str);
 
 void vga_set_color(uint8_t foreground, uint8_t background);
 
-
 void vga_cursor_enable(void);
 
 void vga_cursor_disable(void);
-
 
 void vga_set_cursor(uint8_t x, uint8_t y);
 

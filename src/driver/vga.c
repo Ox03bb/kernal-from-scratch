@@ -7,7 +7,7 @@ static uint16_t cursor_position = 0;
 static uint8_t current_color = LIGHT_GRAY;
 static volatile uint16_t *vga_buf;
 
-void vga_init(void){
+void vga_init(void) {
     cursor_x = 0;
     cursor_y = 0;
     cursor_position = 0;
@@ -19,20 +19,18 @@ void vga_init(void){
 
     vga_set_cursor(0, 0);
     vga_cursor_enable();
-
-}   
+}
 
 // Print
 
-void vga_print_char(char c){
+void vga_print_char(char c) {
 
-    vga_buf[cursor_position] =  (current_color << 8 | c );
+    vga_buf[cursor_position] = (current_color << 8 | c);
 
     vga_set_cursor_position((cursor_position + 1));
 }
 
-
-void vga_print(const char *str){
+void vga_print(const char *str) {
     if (str == 0) {
         return;
     }
@@ -42,11 +40,11 @@ void vga_print(const char *str){
     }
 }
 
-void vga_set_color(uint8_t foreground, uint8_t background){
-    current_color = ( background << 4 | foreground );
+void vga_set_color(uint8_t foreground, uint8_t background) {
+    current_color = (background << 4 | foreground);
 }
 
-// Cursor Enabling 
+// Cursor Enabling
 void vga_cursor_enable(void) {
     outb(VGA_INDEX_PORT, VGA_CURSOR_START);
     outb(VGA_DATA_PORT, 0x06);
@@ -89,7 +87,6 @@ void vga_set_cursor_position(uint16_t p) {
     cursor_y = p / VGA_WIDTH;
 }
 
-
 uint16_t vga_get_cursor_position(void) {
 
     outb(VGA_INDEX_PORT, VGA_CURSOR_HIGH);
@@ -105,7 +102,6 @@ uint8_t vga_get_cursor_x(void) { return vga_get_cursor_position() % VGA_WIDTH; }
 
 uint8_t vga_get_cursor_y(void) { return vga_get_cursor_position() / VGA_WIDTH; }
 
-
 // Clear
 
 void vga_clear(void) {
@@ -113,7 +109,7 @@ void vga_clear(void) {
     vga_set_cursor(0, 0);
 
     for (int i = 0; i < VGA_RES; i++) {
-        vga_buf[i] =  ((uint16_t)0 << 8) | ' ';
+        vga_buf[i] = ((uint16_t)0 << 8) | ' ';
     }
 
     vga_set_cursor(0, 0);
