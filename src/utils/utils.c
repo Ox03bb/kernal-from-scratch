@@ -12,3 +12,8 @@ uint8_t inb(uint16_t port) {
 
     return value;
 }
+
+void io_wait(void) { // delay for I/O operation
+
+    __asm__ volatile("outb %%al, $0x80" : : "a"(0));
+}
