@@ -1,9 +1,15 @@
 [BITS 32]
 
+section .text.start
+
+
 global _start
 extern kernel_main
 
+
+
 _start:
+    cli
     call print_kernel_loaded
     call kernel_main
 

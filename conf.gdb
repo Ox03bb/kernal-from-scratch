@@ -1,2 +1,2 @@
-file build/kernel-linked.o
+file build/kernel.elf
 target remote localhost:1234

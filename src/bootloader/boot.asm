@@ -1,6 +1,9 @@
 [BITS 16]
 [ORG 0x7C00]
 
+%include "build/kernel_sectors.inc"
+
+
 CODE_SEG equ gdt_code - gdt_start
 DATA_SEG equ gdt_data - gdt_start
 
@@ -26,7 +29,7 @@ mov dl, 0x80 ; Drive number (First hard disk)
 mov cl, 0x02 ; Sector number (Sector 2) , becouse sector 1 is bootloader
 mov ch, 0x00 ; Cylinder number (Cylinder 0)
 mov ah, 0x02 ; Function: Read sectors from disk
-mov al, 8
+mov al, KERNEL_SECTORS
 int 0x13
 
 jc disk_read_error
