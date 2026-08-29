@@ -1,0 +1,1 @@
+KERNEL_SECTORS equ 15

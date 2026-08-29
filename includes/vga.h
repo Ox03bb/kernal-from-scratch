@@ -46,6 +46,8 @@ void vga_print_char(char c);
 
 void vga_print(const char *str);
 
+void vga_print_hex(uint32_t value);
+
 void vga_scan_char(char c);
 
 void vga_scan(const char *str);

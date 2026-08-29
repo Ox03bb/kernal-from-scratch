@@ -14,7 +14,7 @@ global isr%1
 isr%1:
     pusha
 
-    push %1
+    push dword %1
     call isr_handler
     add esp, 4
 
@@ -35,20 +35,22 @@ global isr%1
 isr%1:
     pusha
 
-    push %1
+    push dword %1
     call isr_handler
     add esp, 4
 
     popa
 
+    ; Remove CPU-pushed error code
     add esp, 4
+
     iret
 
 %endmacro
 
 
 ; ============================================================
-; EXCEPTIONS 0-31
+; CPU EXCEPTIONS 0-31
 ; ============================================================
 
 ISR_NOERRCODE 0
@@ -118,17 +120,13 @@ section .rodata
 
 global isr_table
 
-%macro ISR_TABLE_ENTRY 1
-    dd isr%1
-%endmacro
-
 isr_table:
 
 %assign i 0
 
 %rep 256
 
-    ISR_TABLE_ENTRY i
+    dd isr%+i
 
 %assign i i + 1
 
