@@ -1,6 +1,3 @@
 #include "isr.h"
 
-
-void isr_handler(){
-    
-}
+void isr_handler() {}

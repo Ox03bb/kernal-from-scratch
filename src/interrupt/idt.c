@@ -24,7 +24,6 @@ void idt_clear(void) {
 
 static void idt_load(void) { asm volatile("lidt %0" : : "m"(idtr)); }
 
-
 void idt_init(void) {
     idt_clear();
 

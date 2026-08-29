@@ -8,7 +8,6 @@
 #define IDT_INTERRUPT_GATE   0x8E
 #define KERNEL_CODE_SELECTOR 0x08
 
-
 extern uint32_t isr_table[32];
 
 struct idt_entry {

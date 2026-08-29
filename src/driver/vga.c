@@ -36,14 +36,13 @@ void vga_print(const char *str) {
     }
 
     for (uint64_t i = 0; str[i] != '\0'; i++) {
-        if (str[i] == '\n'){
+        if (str[i] == '\n') {
             uint8_t y = vga_get_cursor_y() + 1;
-            vga_set_cursor(0,y);
+            vga_set_cursor(0, y);
 
-        }else{
+        } else {
             vga_print_char(str[i]);
         }
-            
     }
 }
 

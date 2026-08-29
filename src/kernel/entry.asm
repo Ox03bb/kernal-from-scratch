@@ -1,11 +1,11 @@
 [BITS 32]
 
 global _start
-extern kernal_main
+extern kernel_main
 
 _start:
     call print_kernel_loaded
-    call kernal_main
+    call kernel_main
 
     cli
 .hang:

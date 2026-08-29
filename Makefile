@@ -3,7 +3,7 @@ INCLUDE_DIR := includes
 BUILD_DIR := build
 BIN_DIR := bin
 
-# Find all assembly source files in kernal and all C source files in src
+# Find all assembly source files in kernel and all C source files in src
 KERNEL_ASM_SRCS := $(shell find $(SRC_DIR) \
 	-path "$(SRC_DIR)/bootloader" -prune -o \
 	\( -name '*.asm' -o -name '*.s' \) -print)
@@ -59,12 +59,12 @@ $(OS_BIN): $(BOOT_ASM) $(KERNEL_ASM_SRCS) $(KERNEL_C_SRCS) $(LINKER_SCRIPT)
 	@echo "Building kernel in Docker..."
 	@mkdir -p $(BIN_DIR)
 	$(DOCKER_RUN) /bin/bash -c '\
-		mkdir -p build/kernal bin && \
+		mkdir -p build/kernel bin && \
 		nasm -f bin src/bootloader/boot.asm -o bin/boot.bin && \
 		$(foreach src,$(KERNEL_ASM_SRCS),mkdir -p $(dir build/$(subst src/,,$(src:.asm=.asm.o))) && nasm -f elf32 -g $(src) -o build/$(subst src/,,$(src:.asm=.asm.o)) &&) \
 		$(foreach src,$(KERNEL_C_SRCS),mkdir -p $(dir build/$(subst src/,,$(src:.c=.o))) && i686-elf-gcc $(CFLAGS) -c $(src) -o build/$(subst src/,,$(src:.c=.o)) &&) \
-		i686-elf-ld -r -o build/kernal-linked.o $$(find build -name "*.o" ! -name "kernal-linked.o") && \
-		i686-elf-gcc $(CFLAGS) -T linker.ld -o bin/kernel.bin build/kernal-linked.o && \
+		i686-elf-ld -r -o build/kernel-linked.o $$(find build -name "*.o" ! -name "kernel-linked.o") && \
+		i686-elf-gcc $(CFLAGS) -T linker.ld -o bin/kernel.bin build/kernel-linked.o && \
 		cat bin/boot.bin > bin/os.bin && \
 		cat bin/kernel.bin >> bin/os.bin && \
 		dd if=/dev/zero bs=512 count=8 >> bin/os.bin status=none && \
