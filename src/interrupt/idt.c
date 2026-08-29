@@ -24,10 +24,15 @@ void idt_clear(void) {
 
 static void idt_load(void) { asm volatile("lidt %0" : : "m"(idtr)); }
 
+
 void idt_init(void) {
     idt_clear();
 
     idt_init_descriptor();
+
+    for (uint8_t i = 0; i < 32; i++) {
+        idt_set_gate(i, isr_table[i], KERNEL_CODE_SELECTOR, IDT_INTERRUPT_GATE);
+    }
 
     idt_load();
 }
