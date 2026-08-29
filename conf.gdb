@@ -1,2 +1,2 @@
-file build/completeKernel.o
+file build/kernel-linked.o
 target remote localhost:1234
