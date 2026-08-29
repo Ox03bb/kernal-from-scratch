@@ -4,7 +4,9 @@ BUILD_DIR := build
 BIN_DIR := bin
 
 # Find all assembly source files in kernal and all C source files in src
-KERNEL_ASM_SRCS := $(shell find $(SRC_DIR)/kernal -name '*.asm' -o -name '*.s')
+KERNEL_ASM_SRCS := $(shell find $(SRC_DIR) \
+	-path "$(SRC_DIR)/bootloader" -prune -o \
+	\( -name '*.asm' -o -name '*.s' \) -print)
 KERNEL_C_SRCS := $(shell find $(SRC_DIR) -name '*.c')
 
 # Bootloader
