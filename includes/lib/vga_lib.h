@@ -6,10 +6,10 @@
 /*
  * Logging
  */
-void vga_log_info(const char *str0, const char *str, const char *str2) ;
-void vga_log_success(const char *str0, const char *str, const char *str2) ;
-void vga_log_warning(const char *str0, const char *str, const char *str2) ;
-void vga_log_error(const char *str0, const char *str, const char *str2) ;
+void vga_log_info(const char *str0, const char *str, const char *str2);
+void vga_log_success(const char *str0, const char *str, const char *str2);
+void vga_log_warning(const char *str0, const char *str, const char *str2);
+void vga_log_error(const char *str0, const char *str, const char *str2);
 
 /*
  * Text utilities

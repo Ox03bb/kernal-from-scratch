@@ -53,7 +53,6 @@ void vga_log_error(const char *str0, const char *str, const char *str2) {
     vga_print(str2);
 }
 
-
 /*
  * Text utilities
  */
