@@ -29,6 +29,9 @@
 
 #define LIGHT_FLAG 0x08
 
+#define DEFUALT_F LIGHT_GRAY
+#define DEFUALT_B BLACK
+
 typedef union vga_entry {
     uint16_t value;
 

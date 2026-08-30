@@ -46,7 +46,7 @@ void vga_print(const char *str) {
     }
 }
 
-void vga_print_hex(uint32_t value){
+void vga_print_hex(uint32_t value) {
     const char hex[] = "0123456789ABCDEF";
 
     vga_print("0x");
