@@ -5,37 +5,54 @@
  * Logging
  */
 
-void vga_log_info(const char *str) {
+void vga_log_info(const char *str0, const char *str, const char *str2) {
+    vga_print(str0);
+
     vga_set_color(BLUE, DEFUALT_B);
 
     vga_print(str);
 
     vga_set_color(DEFUALT_F, DEFUALT_B);
+
+    vga_print(str2);
 }
 
-void vga_log_success(const char *str) {
+void vga_log_success(const char *str0, const char *str, const char *str2) {
+    vga_print(str0);
+
     vga_set_color(GREEN, DEFUALT_B);
 
     vga_print(str);
 
     vga_set_color(DEFUALT_F, DEFUALT_B);
+
+    vga_print(str2);
 }
 
-void vga_log_warning(const char *str) {
+void vga_log_warning(const char *str0, const char *str, const char *str2) {
+    vga_print(str0);
+
     vga_set_color(BROWN, DEFUALT_B);
 
     vga_print(str);
 
     vga_set_color(DEFUALT_F, DEFUALT_B);
+
+    vga_print(str2);
 }
 
-void vga_log_error(const char *str) {
+void vga_log_error(const char *str0, const char *str, const char *str2) {
+    vga_print(str0);
+
     vga_set_color(RED, DEFUALT_B);
 
     vga_print(str);
 
     vga_set_color(DEFUALT_F, DEFUALT_B);
+
+    vga_print(str2);
 }
+
 
 /*
  * Text utilities
@@ -55,9 +72,15 @@ void vga_print_at_end(const char *str) {
     if (length >= VGA_WIDTH)
         length = VGA_WIDTH;
 
-    vga_set_cursor(VGA_WIDTH - length, VGA_HEIGHT - 1);
-
+    vga_set_cursor(VGA_WIDTH - length, vga_get_cursor_y());
     vga_print(str);
+}
+
+void vga_print_at_end_c(const char *str, uint8_t color) {
+
+    vga_set_color(color, DEFUALT_B);
+    vga_print_at_end(str);
+    vga_set_color(DEFUALT_F, DEFUALT_B);
 }
 
 void vga_print_line_at(uint8_t row, const char *str) {
