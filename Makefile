@@ -35,6 +35,8 @@ DOCKER_RUN := docker run --rm \
 	-e PATH=/home/linuxbrew/.linuxbrew/bin:$$PATH \
 	$(DOCKER_IMAGE)
 
+INCLUDE_DIRS := $(shell find $(INCLUDE_DIR) -type d)
+
 CFLAGS := \
 	-g \
 	-O0 \
@@ -44,8 +46,8 @@ CFLAGS := \
 	-nostdlib \
 	-nostartfiles \
 	-nodefaultlibs \
-	-I$(INCLUDE_DIR)
-
+	$(foreach dir,$(INCLUDE_DIRS),-I$(dir))
+	
 .PHONY: all clean run debug format format-check lint
 
 all: $(OS_BIN)
