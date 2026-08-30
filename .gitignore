@@ -61,3 +61,6 @@ dkms.conf
 
 
 .vscode
+**.inc
+
+build/*
