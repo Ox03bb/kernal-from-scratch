@@ -112,8 +112,8 @@ run: $(OS_BIN)
 		-serial stdio
 
 setup:
-	@if ! docker image inspect cc:latest >/dev/null 2>&1; then \
-		docker build -t cc:latest .; \
+	@if ! docker image inspect $(DOCKER_IMAGE):latest >/dev/null 2>&1; then \
+		docker build -t $(DOCKER_IMAGE):latest .; \
 	fi
 	$(MAKE)
 
