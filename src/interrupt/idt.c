@@ -29,8 +29,14 @@ void idt_init(void) {
 
     idt_init_descriptor();
 
+    // isr
     for (uint8_t i = 0; i < 32; i++) {
         idt_set_gate(i, isr_table[i], KERNEL_CODE_SELECTOR, IDT_INTERRUPT_GATE);
+    }
+
+    // irq
+    for (uint8_t i = 32; i < 48; i++) {
+        idt_set_gate(i, irq_table[i - 32], KERNEL_CODE_SELECTOR, IDT_INTERRUPT_GATE);
     }
 
     idt_load();

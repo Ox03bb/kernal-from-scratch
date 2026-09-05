@@ -46,6 +46,17 @@ void vga_print(const char *str) {
     }
 }
 
+void vga_print_hex(uint32_t value) {
+    const char hex[] = "0123456789ABCDEF";
+
+    vga_print("0x");
+
+    for (int i = 7; i >= 0; i--) {
+        uint8_t digit = (value >> (i * 4)) & 0xF;
+        vga_print_char(hex[digit]);
+    }
+}
+
 void vga_set_color(uint8_t foreground, uint8_t background) {
     current_color = (background << 4 | foreground);
 }

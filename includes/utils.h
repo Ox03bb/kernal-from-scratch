@@ -12,4 +12,6 @@ void cli(void);
 void sti(void);
 void hlt(void);
 
+uint32_t read_eflags(void);
+
 #endif

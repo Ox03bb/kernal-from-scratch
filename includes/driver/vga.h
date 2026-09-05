@@ -29,6 +29,9 @@
 
 #define LIGHT_FLAG 0x08
 
+#define DEFUALT_F LIGHT_GRAY
+#define DEFUALT_B BLACK
+
 typedef union vga_entry {
     uint16_t value;
 
@@ -45,6 +48,8 @@ void vga_clear(void);
 void vga_print_char(char c);
 
 void vga_print(const char *str);
+
+void vga_print_hex(uint32_t value);
 
 void vga_scan_char(char c);
 
