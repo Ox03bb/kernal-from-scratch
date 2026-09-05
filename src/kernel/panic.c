@@ -1,7 +1,7 @@
+#include "panic.h"
 #include "lib/vga_lib.h"
 #include "utils.h"
 #include "vga.h"
-#include "panic.h"
 
 void panic(char *err) {
     vga_print("\n");
