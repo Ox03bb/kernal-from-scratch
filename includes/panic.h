@@ -2,5 +2,5 @@
 #define PANIC_H
 
 void panic(char *err);
-
+void exception(char *err);
 #endif
