@@ -111,6 +111,12 @@ run: $(OS_BIN)
 		-m 512M \
 		-serial stdio
 
+setup:
+	@if ! docker image inspect cc:latest >/dev/null 2>&1; then \
+		docker build -t cc:latest .; \
+	fi
+	$(MAKE)
+
 
 debug: $(OS_BIN)
 	qemu-system-i386 \
