@@ -20,9 +20,9 @@ void kernel_main() {
     idt_init();
     vga_print_at_end_c("... Ok\n", GREEN);
 
-    panic("testing panics");
+    asm volatile("int $0x22");
 
-    asm volatile("int $0x24");
+    panic("testing panics");
 
     for (;;) {
         asm volatile("cli");

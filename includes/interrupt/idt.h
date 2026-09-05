@@ -9,6 +9,7 @@
 #define KERNEL_CODE_SELECTOR 0x08
 
 extern uint32_t isr_table[256];
+extern uint32_t irq_table[16];
 
 struct idt_entry {
     uint16_t offset_low;  // handler address bits 0..15
